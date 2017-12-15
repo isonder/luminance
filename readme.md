@@ -1,4 +1,6 @@
-# Analysis of Explosive Magma-Water Interaction Experiment Video Recordings
+# _*_ under construction _*_
+
+### Analysis of Explosive Magma-Water Interaction Experiment Video Recordings
 
 Compute explosive response ('activity') based on a simple brightness scale.
 

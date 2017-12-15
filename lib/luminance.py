@@ -4,10 +4,8 @@ from slicerator import Slicerator as _Slicerator
 import multiprocessing as _mp
 from scipy.interpolate import UnivariateSpline as _UnvS
 import scipy.signal as _sig
-from mopics import ImageIndex
 
 _nprocs = _mp.cpu_count()
-_iidx = None
 
 
 def cumul_bright(frame: _nda, select: tuple=None) -> float:
@@ -196,63 +194,6 @@ def dldot(t: _nda, lum: _UnvS, threshold: float=None, invalid: float=_np.nan):
     else:
         ret = lum.derivative(n=1)(t) / (2 * _np.sqrt(lumn))
     return ret
-
-
-def centroid(frame: _nda, ref_bright: float, select: tuple=None) -> _nda:
-    if select is None:
-        start0, start1 = 0, 0
-        end0, end1 = frame.shape
-    else:
-        ((start0, end0), (start1, end1)) = select
-    fr = _np.asarray(frame[start0:end0, start1:end1])
-    global _iidx
-    if not isinstance(_iidx, ImageIndex):
-        _iidx = ImageIndex()
-    idx = _iidx(fr.shape)
-    return _np.sum((fr[idx[:, 0], idx[:, 1]] / ref_bright) * idx.T, axis=1)
-
-
-def _centroid_chunk_sequence(
-        chunk: _Slicerator, ref_bright: float, select: tuple,
-        start: int, end: int, que: _mp.Queue):
-    ret = _np.empty((len(chunk), 2), dtype=_np.float)
-    for i, frame in enumerate(chunk):
-        ret[i] = centroid(frame, ref_bright, select)
-    que.put((ret, start, end))
-
-
-def centroid_sequence(seq: _Slicerator, ref_bright: float,
-                      select: tuple=None, processes: int=_nprocs) -> _nda:
-    """
-    """
-    itms_per_proc, rem = len(seq) // processes, len(seq) % processes
-    que = _mp.Queue()
-    start, end, procs, idx = 0, -1, [], []
-    for k in range(processes):
-        end = start + itms_per_proc
-        p = _mp.Process(
-            target=_centroid_chunk_sequence,
-            args=(seq[start:end], ref_bright, select, start, end, que))
-        procs.append(p)
-        start = end
-        p.start()
-    p = _mp.Process(
-        target=_cbright_chunk,
-        args=(seq[start:], select, start, len(seq), que))
-    procs.append(p)
-    p.start()
-    cent = _np.empty((len(seq), 2), dtype=_np.float)
-    for _ in range(len(procs)):
-        chunk, start, end = que.get()
-        try:
-            cent[start:end] = chunk
-        except ValueError:
-            print("chunk:", chunk)
-            print("start:", start, "end:", end)
-            raise
-    for p in procs:
-        p.join()
-    return cent
 
 
 class FilterProfile:
