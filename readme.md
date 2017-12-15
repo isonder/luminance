@@ -23,8 +23,8 @@ Download or clone the package from github. Then create a new virtual
  environment.
 ```
 cd "/home/of/my/workspace"
-git clone https://github.com/isonder/yaddayaddayadda.git
-mkvirtualenv -p /usr/bin/python3 yadda
+git clone https://github.com/isonder/luminance.git
+mkvirtualenv -p /usr/bin/python3 lum
 toggleglobalsitepackages
 pip install -r requirements.txt
 ```
