@@ -47,10 +47,10 @@ def _cbright_chunk(chunk: _Slicerator,
     :param chunk: Complete or partial image  sequence.
     :param select: Selection marking the subset of `frame` to compute the
      luminance from.
-    :param start:
-    :param end:
-    :param que:
-    :return:
+    :param start: Start position in sequence from which `chunk` was selected.
+    :param end: End position in sequence from which `chunk` was selected.
+    :param que: The queue object that manages the multiple processes.
+    :return: None.
     """
     act = _np.empty(len(chunk), dtype=_np.float)
     for i, frame in enumerate(chunk):
