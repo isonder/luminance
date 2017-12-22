@@ -13,7 +13,7 @@ def cumul_bright(frame: _nda, select: tuple=None) -> float:
     :param frame: Image to compute the luminance from.
     :param select: ((start0, end0), (start1, end1)). Optional, to select subset
       of `frame`.
-    :return: L
+    :return: Brightness of frame.
     """
     if select is None:
         start0, start1 = 0, 0
@@ -25,21 +25,33 @@ def cumul_bright(frame: _nda, select: tuple=None) -> float:
 
 def luminance(frame: _nda, fov: float, ref: float, noise: float,
               select: tuple=None):
-    """
+    """Computes the luminance from a given video frame.
 
-    :param frame:
-    :param fov: Field of view (m^2).
-    :param ref:
-    :param noise:
-    :param select:
-    :return:
+    :param frame: Image frame to compute the luminance from.
+    :param fov: Field of view (square meters).
+    :param ref: Cumulative reference brightness.
+    :param noise: Cumulative brightness of background noise.
+    :param select: Selection marking the subset of `frame` to compute the
+     luminance from.
+    :return: luminance.
     """
     return fov * (cumul_bright(frame, select) - noise) / (ref - noise)
 
 
 def _cbright_chunk(chunk: _Slicerator,
                    select: tuple, start: int, end: int, que: _mp.Queue):
-    """"""
+    """Computes the cumulative brightness for a part of an image sequence. This
+    method should not be called directly, but is called multiple times from
+    `cumul_bright_sequence()` in separate processes.
+
+    :param chunk: Complete or partial image  sequence.
+    :param select: Selection marking the subset of `frame` to compute the
+     luminance from.
+    :param start:
+    :param end:
+    :param que:
+    :return:
+    """
     act = _np.empty(len(chunk), dtype=_np.float)
     for i, frame in enumerate(chunk):
         act[i] = cumul_bright(frame, select)
@@ -109,7 +121,7 @@ def average_cbright(chunk: _Slicerator, select: tuple=None,
 
 def luminance_sequence(seq: _Slicerator, fov: float, ref: float, noise: float,
                        select: tuple=None, processes: int=_nprocs) -> _nda:
-    """
+    """Computes the luminance of frame sequence `seq`.
 
     :param seq: Image sequence, or part of image sequence.
     :param fov: Camera's field of view (typically in square meters).
@@ -149,12 +161,13 @@ def sigma_luminance(lum, ref: float, sref: float, noise: float, snoise: float,
 def sigma_ldot(ldot, lum, slum, srate, ssrate, lmin: float=1e-4) -> _nda:
     """Standard deviation of Ldot (time derivative of luminance).
 
-    :param ldot:
-    :param lum:
-    :param slum:
-    :param srate:
-    :param ssrate:
-    :param lmin:
+    :param ldot: Luminance time derivative.
+    :param lum: Luminance.
+    :param slum: Standard deviation of luminance.
+    :param srate: sampling rate.
+    :param ssrate: standard devition of sampling rate.
+    :param lmin: Minimum value of luminance. if `lum` is smaller than this value
+    the return value will be made invalid (nan).
     :return:
     """
     if isinstance(ldot, _nda):
@@ -197,8 +210,29 @@ def dldot(t: _nda, lum: _UnvS, threshold: float=None, invalid: float=_np.nan):
 
 
 class FilterProfile:
+    """A little profile object to store camera specific filter profiles.
+
+    .. attribute:: cname
+
+        A camera identifier.
+
+    .. attribute srate
+
+        Camera's sampling rate.
+
+    .. attribute filterfreq
+
+        Array of frequencies that should be damped from signal.
+
+    .. attribute filterwidth
+
+        Frequency width of the sink in the filter response around each value
+        in `filterfreq`.
+    """
     def __init__(self, cname: str, srate: float, filterfreq: _nda,
                  filterwidth: float=1.5):
+        """See above.
+        """
         self.cname = cname
         self.srate = srate
         self.freqs = filterfreq
@@ -211,7 +245,14 @@ prof_casiof1 = FilterProfile(
 )
 
 
-def filter_lum(lum: _nda, profile: FilterProfile):
+def filter_lum(lum: _nda, profile: FilterProfile) -> _nda:
+    """Filters a luminance (or any other) signal according to the given filter
+    profile.
+
+    :param lum: 'raw' signal to be filtered.
+    :param profile: Filter profile.
+    :return: Filtered signal.
+    """
     fw = profile.filterwidth
     r = profile.srate
     pars = [
