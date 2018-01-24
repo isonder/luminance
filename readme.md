@@ -21,7 +21,7 @@ Compute explosive response ('activity') based on a simple brightness scale.
 ## Setup
 Download or clone the package from github. Then create a new virtual
  environment.
-```
+```bash
 cd "/home/of/my/workspace"
 git clone https://github.com/isonder/luminance.git
 mkvirtualenv -p /usr/bin/python3 lum
