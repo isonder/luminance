@@ -13,7 +13,7 @@ def cumul_bright(frame: _nda, select: tuple=None) -> float:
     :param frame: Image to compute the luminance from.
     :param select: ((start0, end0), (start1, end1)). Optional, to select subset
       of `frame`.
-    :return: L
+    :return: `L`
     """
     if select is None:
         start0, start1 = 0, 0
