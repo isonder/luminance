@@ -33,6 +33,8 @@ def _videoname(run, cam):
 
 
 def download_video(run=None, cam=None, url=None, targetbase='data' + os.sep):
+    if not os.path.exists(targetbase):
+        os.makedirs(targetbase, exist_ok=True)
     if run is not None:
         try:
             print('Downloading video from %s' % tested_videos[run][cam])
@@ -54,7 +56,9 @@ def imgseq(run, cam):
             download_video(run=run, cam=cam)
         vname = _videoname(run, cam)
         print("Converting '%s' to image sequence" % vname)
-        os.system('mkdir "%s"' % base)
+        if not os.path.exists(base):
+            os.makedirs(base, exist_ok=True)
+        # os.system('mkdir "%s"' % base)
         os.system('ffmpeg -i "%s" -q:v 1 %s%sframe'
                   % ("data" + os.sep + vname, base, os.sep) + "%08d.jpg")
     return pims.ImageSequence(base + "*.jpg", as_grey=True)
