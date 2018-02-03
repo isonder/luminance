@@ -209,6 +209,43 @@ def dldot(t: _nda, lum: _UnvS, threshold: float=None, invalid: float=_np.nan):
     return ret
 
 
+def sigma_dldot(ldot, sldot, lum, slum, lmin: float):
+    """Standard deviation of dldot.
+    All parameters except `lmin` should be given either as ndarray, or as
+    float, mixed parameter sets will return an error.
+
+    :param ldot: Time derivative of luminance.
+    :type ldot: float or ndarray.
+    :param sldot: Standard deviation of `ldot`.
+    :type sldot: float or ndarray.
+    :param lum: Luminance.
+    :type lum: float or ndarray.
+    :param slum: Uncertainty of `lum`.
+    :type slum: float or ndarray.
+    :param lmin: Minimum luminance for which to compute `sigma_dldot`.
+    :return: 1-sigma uncertainty of dldot.
+    :rtype: float or ndarray
+    """
+    if isinstance(ldot, _nda):
+        ret = _np.nan * _np.empty_like(ldot)
+        idx = lum > lmin
+        ret[idx] = _np.sqrt(
+            (sldot[idx] / (2 * lum[idx] ** 0.5)) ** 2 +
+            (ldot[idx] * slum[idx] / (4 * lum[idx] ** 1.5)) ** 2
+        )
+    else:
+        assert not isinstance(lum, _nda), \
+            "if ldot is given as float, lum must be, too."
+        if lum < lmin:
+            ret = _np.nan
+        else:
+            ret = _np.sqrt(
+                (sldot / (2 * lum ** 0.5)) ** 2 +
+                (ldot * slum / (4 * lum ** 1.5)) ** 2
+            )
+    return ret
+
+
 class FilterProfile:
     """A little profile object to store camera specific filter profiles.
 
