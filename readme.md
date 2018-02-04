@@ -8,3 +8,5 @@ scale.
 
 
 The tools use the `ffmpeg` video decoder/converter, and depend on a Python distribution. Therefore, before reading the example, have a look at the [install and setup notes](./setup.md).
+
+Once set up the [example notebook](./Luminance-example.ipynb) provides a walk through the main steps.

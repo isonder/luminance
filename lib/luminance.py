@@ -282,7 +282,7 @@ prof_casiof1 = FilterProfile(
 )
 
 
-def filter_lum(lum: _nda, profile: FilterProfile) -> _nda:
+def filter_lum(lum: _nda, profile: FilterProfile):
     """Filters a luminance (or any other) signal according to the given filter
     profile.
 
