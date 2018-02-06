@@ -2,10 +2,9 @@
 
 1. The code depends on the command line of the `ffmpeg` utility. In order to convert the videos to image sequences, it needs to be available on the command line system wide.
   - On *Linux* this should be available as a standard package.
-  - On *MacOS* <a href="https://superuser.com/questions/624561" target="_blank">this guide</a>
-  shows several ways to set it up. The second choice seems to be the easiest.
-  - On *Windows* <a href="https://video.stackexchange.com/questions/20495" target="_blank">this is a nice setup guide on StackExchange</a>.
-2. The code is written in Python, and depends on a number of scientific packages. If a Python distribution with the `pip` tool is available this should work. Otherwise the <a href="https://www.anaconda.com/distribution/" target="_blank">Anaconda distribution</a> is recommended for use. If using Anaconda make sure to install the Python 3 version. The **code will not run under Python 2**. It may be useful to run things in a virtual environment; but this is not strictly necessary.
+  - On *MacOS* [this guide](https://superuser.com/questions/624561) shows several ways to set it up. The second choice seems to be the easiest.
+  - On *Windows* [this is a nice setup guide on StackExchange](https://video.stackexchange.com/questions/20495).
+2. The code is written in Python, and depends on a number of scientific packages. If a Python distribution with the `pip` tool is available this should work. Otherwise the [Anaconda distribution](https://www.anaconda.com/distribution/) is recommended for use. If using Anaconda make sure to install the Python 3 version. The **code will not run under Python 2**. It may be useful to run things in a virtual environment; but this is not strictly necessary.
 3. The following packages are necessary, and can be installed with
   ```bash
   pip install packagenames
