@@ -1,8 +1,7 @@
+"""All luminance related functions"""
 import numpy as _np
 from numpy import ndarray as _nda
-from slicerator import Slicerator as _Slicerator
 import multiprocessing as _mp
-from scipy.interpolate import UnivariateSpline as _UnvS
 import scipy.signal as _sig
 
 _nprocs = _mp.cpu_count()
@@ -12,7 +11,8 @@ def cumul_bright(frame: _nda, select: tuple=None) -> float:
     """Computes the cumulative, relative luminance of an image
     :param frame: Image to compute the luminance from.
     :param select: ((start0, end0), (start1, end1)). Optional, to select subset
-      of `frame`.
+    of `frame`.
+
     :return: Brightness of frame.
     """
     if select is None:
@@ -23,33 +23,43 @@ def cumul_bright(frame: _nda, select: tuple=None) -> float:
     return frame[start0:end0, start1:end1].sum()
 
 
-def luminance(frame: _nda, fov: float, ref: float, noise: float,
-              select: tuple=None):
+def luminance(frame, fov, ref, noise, select=None):
     """Computes the luminance from a given video frame.
 
     :param frame: Image frame to compute the luminance from.
+    :type frame: 2D `ndarray`
     :param fov: Field of view (square meters).
+    :type fov: `float`
     :param ref: Cumulative reference brightness.
+    :type ref: `float`
     :param noise: Cumulative brightness of background noise.
+    :type noise: `float`
     :param select: Selection marking the subset of `frame` to compute the
      luminance from.
-    :return: luminance.
+    :type select: `tuple` or `None`
+    :return: luminance of `frame`.
+    :rtype: `float`
     """
     return fov * (cumul_bright(frame, select) - noise) / (ref - noise)
 
 
-def _cbright_chunk(chunk: _Slicerator,
-                   select: tuple, start: int, end: int, que: _mp.Queue):
-    """Computes the cumulative brightness for a part of an image sequence. This
-    method should not be called directly, but is called multiple times from
-    `cumul_bright_sequence()` in separate processes.
+def _cbright_chunk(chunk, select, start, end, que):
+    """**Do not call this directly.**
+     Computes the cumulative brightness for a part of an image sequence. This
+     method should is called multiple times from `cumul_bright_sequence()` in
+     separate processes.
 
     :param chunk: Complete or partial image  sequence.
+    :type chunk: Slicerator
     :param select: Selection marking the subset of `frame` to compute the
      luminance from.
+    :type select: tuple
     :param start: Start position in sequence from which `chunk` was selected.
+    :type start: int
     :param end: End position in sequence from which `chunk` was selected.
+    :type end: int
     :param que: The queue object that manages the multiple processes.
+    :type que: multiprocessing.Queue
     :return: None.
     """
     act = _np.empty(len(chunk), dtype=_np.float)
@@ -58,18 +68,21 @@ def _cbright_chunk(chunk: _Slicerator,
     que.put((act, start, end))
 
 
-def cumul_bright_sequence(seq: _Slicerator,
-                          select: tuple=None, processes: int=_nprocs) -> _nda:
-    """Compute the luminance of each frame in `seq` using the `luminance()`
-      function. Arguments other than `seq` and `processes are passed unmodified
-      to `cumul_brightness()`.
+def cumul_bright_sequence(seq, select=None, processes=_nprocs):
+    """Compute the cumulative brightness of each frame in `seq` using the
+     `luminance()` function. Arguments other than `seq` and `processes are
+     passed unmodified to `cumul_brightness()`.
 
     :param seq: Image sequence to compute the luminance from.
+    :type seq: Slicerator
     :param select: ((start0, end0), (start1, end1)). Optional, to select subset
-      of a frame in `seq`.
+     of a frame in `seq`.
+    :type select: tuple
     :param processes: Number of system processes to use. Default is number of
-      system CPUs.
-    :return: L(t)
+     system CPUs.
+    :type processes: int
+    :return: brightness array B(t)
+    :rtype: ndarray
     """
     itms_per_proc, rem = len(seq) // processes, len(seq) % processes
     que = _mp.Queue()
@@ -101,16 +114,20 @@ def cumul_bright_sequence(seq: _Slicerator,
     return act
 
 
-def average_cbright(chunk: _Slicerator, select: tuple=None,
-                    uncert: bool=False, nprocs: int=_nprocs):
-    """Convenience method to compute the average cumulative brightness of given
-     image sequence selection. Useful to determine the noise level.
+def average_cbright(chunk, select=None, uncert=False, nprocs=_nprocs):
+    """Convenience method to compute the average cumulative brightness of
+     given image sequence selection. Useful to determine the noise level.
 
     :param chunk: Image sequence/chunk.
+    :type chunk: Slicerator
     :param select: Selection of images to work on.
+    :type select: tuple
     :param uncert: Whether to return standard deviation alongside average value.
+    :type uncert: bool
     :param nprocs: Number of processes to use.
+    :type nprocs: int
     :return: Averaged brightness.
+    :rtype: float
     """
     ret = cumul_bright_sequence(chunk, select, nprocs)
     if uncert:
@@ -119,37 +136,49 @@ def average_cbright(chunk: _Slicerator, select: tuple=None,
         return ret.mean()
 
 
-def luminance_sequence(seq: _Slicerator, fov: float, ref: float, noise: float,
-                       select: tuple=None, processes: int=_nprocs) -> _nda:
+def luminance_sequence(seq, fov, ref, noise, select=None, processes=_nprocs):
     """Computes the luminance of frame sequence `seq`.
 
     :param seq: Image sequence, or part of image sequence.
+    :type seq: Slicerator
     :param fov: Camera's field of view (typically in square meters).
+    :type fov: float
     :param ref: Reference brightness (melt brightness) to normalize.
+    :type ref: float
     :param noise: Noise (brightness) level. Typically computed by calling
      `average_cbright()` with a suitable selection of the main sequence.
+    :type noise: float
     :param select: Optional selection of images.
+    :type select: tuple
     :param processes: Number of processes to use (default is number of host
      CPUs).
+    :type processes: int
     :return: Luminance (in square meters) for each frame in given input
      sequence.
+    :rtype: ndarray
     """
     return fov * (cumul_bright_sequence(seq, select, processes) - noise) \
         / (ref - noise)
 
 
-def sigma_luminance(lum, ref: float, sref: float, noise: float, snoise: float,
-                    fov: float, sfov:float):
+def sigma_luminance(lum, ref, sref, noise, snoise, fov, sfov):
     """Standard deviation of luminance.
 
-    :param lum: Luminance (float or ndarray).
+    :param lum: Luminance
+    :type lum: float or ndarray.
     :param ref: Reference (melt) brightness.
+    :type ref: float
     :param sref: Standard deviation of `ref`.
+    :type sref: float
     :param noise: Background noise brightness (B0).
+    :type noise: float
     :param snoise: Standard deviation of `noise`.
+    :type snoise: float
     :param fov: Camera's or frame's field of view.
+    :type fov: float
     :param sfov: Standard deviation of `fov`
-    :return:
+    :type sfov: float
+    :rtype: ndarray
     """
     return _np.sqrt(
         (lum / (ref - noise)) ** 2 * sref ** 2
@@ -158,17 +187,23 @@ def sigma_luminance(lum, ref: float, sref: float, noise: float, snoise: float,
     )
 
 
-def sigma_ldot(ldot, lum, slum, srate, ssrate, lmin: float=1e-4) -> _nda:
+def sigma_ldot(ldot, lum, slum, srate, ssrate, lmin=1e-4):
     """Standard deviation of Ldot (time derivative of luminance).
 
     :param ldot: Luminance time derivative.
+    :type ldot: ndarray or float
     :param lum: Luminance.
+    :type lum: ndarray or float
     :param slum: Standard deviation of luminance.
+    :type slum: ndarray or float
     :param srate: sampling rate.
+    :type srate: float
     :param ssrate: standard devition of sampling rate.
+    :type ssrate: float
     :param lmin: Minimum value of luminance. if `lum` is smaller than this value
-    the return value will be made invalid (nan).
-    :return:
+     the return value will be made invalid (nan).
+    :type lmin: float
+    :rtype: ndarray or float
     """
     if isinstance(ldot, _nda):
         idx = lum >= lmin
@@ -186,16 +221,19 @@ def sigma_ldot(ldot, lum, slum, srate, ssrate, lmin: float=1e-4) -> _nda:
                             + (ldot * ssrate / srate) ** 2)
 
 
-def dldot(t: _nda, lum: _UnvS, threshold: float=None, invalid: float=_np.nan):
+def dldot(t, lum, threshold=None, invalid=_np.nan):
     """Speed associated with luminance. Returns v = dot(L) / (2 sqrt(L)).
 
     :param t: Time array.
+    :type t: ndarray
     :param lum: Luminance spline. This has to be a spline, since the smoothing
-      should be done manually.
+     should be done manually.
+    :type lum: UnivariateSpline
     :param threshold: Noise threshold value. At luminosities below this value
-      `dldot` will return the value passed to `invalid`.
-    :param invalid:
-    :return:
+     `dldot` will return the value passed to `invalid`.
+    :type threshold: float
+    :param invalid: Number to use to signify an invalid value (NaN)
+    :rtype: ndarray
     """
     lumn = lum(t)
     ret = _np.empty_like(lumn)
@@ -266,9 +304,13 @@ class FilterProfile:
         Frequency width of the sink in the filter response around each value
         in `filterfreq`.
     """
-    def __init__(self, cname: str, srate: float, filterfreq: _nda,
-                 filterwidth: float=1.5):
+    def __init__(self, cname, srate, filterfreq, filterwidth=1.5):
         """See above.
+
+        :param cname:
+        :param srate:
+        :param filterfreq:
+        :param filterwidth:
         """
         self.cname = cname
         self.srate = srate
@@ -282,13 +324,16 @@ prof_casiof1 = FilterProfile(
 )
 
 
-def filter_lum(lum: _nda, profile: FilterProfile):
+def filter_lum(lum, profile):
     """Filters a luminance (or any other) signal according to the given filter
     profile.
 
     :param lum: 'raw' signal to be filtered.
+    :type lum: ndarray
     :param profile: Filter profile.
+    :type profile: FilterProfile
     :return: Filtered signal.
+    :rtype: ndarray
     """
     fw = profile.filterwidth
     r = profile.srate
