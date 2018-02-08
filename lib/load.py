@@ -37,11 +37,14 @@ def _videoname(run, cam):
 def download_video(run=None, cam=None, url=None, targetbase='data' + os.sep):
     if not os.path.exists(targetbase):
         os.makedirs(targetbase, exist_ok=True)
-    if run is not None:
+    if run is not None and url is None:
         try:
-            print('Downloading video from %s' % tested_videos[run][cam])
-            urlretrieve(tested_videos[run][cam], targetbase
-                        + _videoname(run, cam))
+            urls = tested_videos[run][cam]
+            if isinstance(urls, str):
+                urls = [urls]
+            for rl in urls:
+                print('Downloading video from %s' % rl)
+                urlretrieve(rl, targetbase + _videoname(run, cam))
         except KeyError:
             print("Got wrong identifier: run: %s, cam: %s" % (run, cam),
                   file=sys.stderr)
@@ -60,11 +63,11 @@ def convert_video_to_imgseq(vname, base):
 
 
 def unarchive_imgseq(src, base):
-    if not isinstance(src, list):
-        src = [src]
     for s in src:
-        if not os.path.exists(os.path.basename(base) + s[s.rfind('/'):]):
-            download_video()
+        with zipfile.ZipFile(s) as archive:
+            print("Extracting %d images from '%s' to '%s'"
+                  % (len(archive.filelist), src, base))
+            archive.extractall(path=base[:base.find(os.sep)])
 
 
 def imgseq(run, cam):
@@ -81,7 +84,17 @@ def imgseq(run, cam):
                 download_video(run=run, cam=cam)
             convert_video_to_imgseq(_videoname(run, cam), base)
         elif fmt == "zip-archive":
+            src = dta['src']
+            if not isinstance(src, list):
+                src = [src]
+            for url in src:
+                if not os.path.exists("data" + os.sep
+                                      + url[url.rfind('/') + 1:]):
+                    download_video(url=url)
             unarchive_imgseq(src=dta['src'], base=base)
+        else:
+            raise ValueError("Got an unknown format '%s' for run '%s', "
+                             "cam '%s'" % (fmt, run, cam))
     return pims.ImageSequence(base + "*.jpg", as_grey=True, dtype=numpy.float)
 
 
@@ -291,7 +304,7 @@ vhub_links = {
         'dataset': 'https://vhub.org/resources/4289',
         'sony-4k1': {
             'format': 'video_mp4',
-            'source': 'https://vhub.org/resources/4290/download/2016-08-24'
+            'src': 'https://vhub.org/resources/4290/download/2016-08-24'
                       '_injection-run07_sony-4k1_injection.mp4'
         },
         'sony-4k2': {
@@ -361,10 +374,14 @@ tested_videos = {
 for k in runs:
     itm = tested_videos[k]
     for kk in itm.keys():
-        sitm = vhub_links[k][kk]
-        if 'src' in sitm.keys():
-            tested_videos[k][kk] = sitm['src']
-        elif 'bare' in sitm.keys():
-            tested_videos[k][kk] = sitm['src']
-        else:
-            raise KeyError("Wrong format in %s" % sitm)
+        try:
+            sitm = vhub_links[k][kk]
+            if 'src' in sitm.keys():
+                tested_videos[k][kk] = sitm['src']
+            elif 'bare' in sitm.keys():
+                tested_videos[k][kk] = sitm['bare']['src']
+            else:
+                raise KeyError("Wrong format in %s" % sitm)
+        except:
+            print(k, kk)
+            raise
