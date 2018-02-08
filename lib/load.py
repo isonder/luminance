@@ -4,6 +4,10 @@ from urllib.request import urlretrieve
 import pims
 import numpy
 import zipfile
+import warnings
+
+
+show_warnings = True
 
 
 def show(run=True, cam=True, url=False):
@@ -34,24 +38,25 @@ def _videoname(run, cam):
     return run + "_" + cam + ".mp4"
 
 
-def download_video(run=None, cam=None, url=None, targetbase='data' + os.sep):
+def download_dataset(run=None, cam=None, targetbase='data' + os.sep):
     if not os.path.exists(targetbase):
         os.makedirs(targetbase, exist_ok=True)
-    if run is not None and url is None:
-        try:
-            urls = tested_videos[run][cam]
-            if isinstance(urls, str):
-                urls = [urls]
-            for rl in urls:
-                print('Downloading video from %s' % rl)
-                urlretrieve(rl, targetbase + _videoname(run, cam))
-        except KeyError:
-            print("Got wrong identifier: run: %s, cam: %s" % (run, cam),
-                  file=sys.stderr)
-    elif url is not None:
-        urlretrieve(tested_videos[run][cam], targetbase + _videoname(run, cam))
-    else:
-        raise ValueError("Missing value: One of run or url have to be given.")
+    try:
+        urls = tested_videos[run][cam]
+        if isinstance(urls, str):
+            urls = [urls]
+        ret = []
+        for rl in urls:
+            trg = targetbase + rl[rl.rfind("/") + 1:]
+            if not os.path.exists(trg):
+                print('Downloading video from %s to %s' % (rl, trg))
+                urlretrieve(rl, trg)
+            ret.append(trg)
+        return ret
+    except KeyError:
+        print("Got wrong identifier: run: %s, cam: %s" % (run, cam),
+              file=sys.stderr)
+        raise
 
 
 def convert_video_to_imgseq(vname, base):
@@ -65,9 +70,20 @@ def convert_video_to_imgseq(vname, base):
 def unarchive_imgseq(src, base):
     for s in src:
         with zipfile.ZipFile(s) as archive:
+            trg = base[:base.find(os.sep)]
             print("Extracting %d images from '%s' to '%s'"
-                  % (len(archive.filelist), src, base))
-            archive.extractall(path=base[:base.find(os.sep)])
+                  % (len(archive.filelist), s, trg))
+            archive.extractall(path=trg)
+
+
+img_format_labels = [
+    'jpg', 'jpeg', 'JPG', 'JPEG',
+    'tif', 'tiff', 'TIF', 'TIFF'
+]
+
+
+class ImageFormatError(Exception):
+    pass
 
 
 def imgseq(run, cam):
@@ -81,26 +97,31 @@ def imgseq(run, cam):
             fmt = dta['format']
         if fmt == "video_mp4":
             if not os.path.exists(base + ".mp4"):
-                download_video(run=run, cam=cam)
+                download_dataset(run=run, cam=cam)
             convert_video_to_imgseq(_videoname(run, cam), base)
         elif fmt == "zip-archive":
-            src = dta['src']
-            if not isinstance(src, list):
-                src = [src]
-            for url in src:
-                if not os.path.exists("data" + os.sep
-                                      + url[url.rfind('/') + 1:]):
-                    download_video(url=url)
-            unarchive_imgseq(src=dta['src'], base=base)
+            unarchive_imgseq(src=download_dataset(run=run, cam=cam), base=base)
         else:
             raise ValueError("Got an unknown format '%s' for run '%s', "
                              "cam '%s'" % (fmt, run, cam))
-    return pims.ImageSequence(base + "*.jpg", as_grey=True, dtype=numpy.float)
+    lbl = ""
+    for f in os.listdir(base):
+        lbl = f[f.rfind('.') + 1:]
+        if lbl in img_format_labels:
+            break
+    if lbl not in img_format_labels:
+        raise ImageFormatError(
+            "Did not find any valid image files in %s.\n"
+            "Valid image types are: %s" % (base, img_format_labels))
+    if not show_warnings:
+        warnings.simplefilter("ignore", UserWarning)
+    ret = pims.ImageSequence(base + "*." + lbl, as_grey=True, dtype=numpy.float)
+    return ret
 
 
 runs = [
-    'pr06', 'pr05', 'ir16', 'ir15', 'ir14', 'ir13', 'ir12', 'ir07',
-    'ir06', 'ir05', 'ir04', 'ir03', 'tx02'
+    'pr06', 'pr05', 'ir16', 'ir15', 'ir14', 'ir13', 'ir12', 'ir07', 'ir06',
+    'ir05', 'ir04', 'ir03', 'tx02'
 ]
 
 
