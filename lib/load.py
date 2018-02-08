@@ -121,7 +121,7 @@ def imgseq(run, cam):
 
 runs = [
     'pr06', 'pr05', 'ir16', 'ir15', 'ir14', 'ir13', 'ir12', 'ir07', 'ir06',
-    'ir05', 'ir04', 'ir03', 'tx02'
+    'ir05', 'ir04', 'ir03', 'tx02', 'tx08'
 ]
 
 
@@ -373,6 +373,14 @@ vhub_links = {
             'src': ['https://vhub.org/resources/4344/download/tx02_nac-0.zip',
                     'https://vhub.org/resources/4345/download/tx02_nac-1.zip']
         }
+    },
+    'tx08': {
+        'dataset': 'https://vhub.org/resources/4347',
+        'nac': {
+            'format': 'zip-archive',
+            'src': ['https://vhub.org/resources/4350/download/tx08_nac-0.zip',
+                    'https://vhub.org/resources/4351/download/tx08_nac-1.zip']
+        }
     }
 }
 
@@ -390,7 +398,8 @@ tested_videos = {
     'ir05': {'casio-f1': ''},
     'ir04': {'casio-f1': ''},
     'ir03': {'casio-f1': ''},
-    'tx02': {'nac': []}
+    'tx02': {'nac': []},
+    'tx08': {'nac': []}
 }
 for k in runs:
     itm = tested_videos[k]
