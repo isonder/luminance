@@ -7,13 +7,16 @@ import scipy.signal as _sig
 _nprocs = _mp.cpu_count()
 
 
-def cumul_bright(frame: _nda, select: tuple=None) -> float:
-    """Computes the cumulative, relative luminance of an image
-    :param frame: Image to compute the luminance from.
-    :param select: ((start0, end0), (start1, end1)). Optional, to select subset
-    of `frame`.
+def cumul_bright(frame, select=None):
+    """Computes the cumulative, relative luminance of an image.
 
+    :param frame: Image to compute the luminance from.
+    :type frame: ndarray
+    :param select: ((start0, end0), (start1, end1)). Optional, to select subset
+     of `frame`.
+    :type select: tuple
     :return: Brightness of frame.
+    :rtype: float
     """
     if select is None:
         start0, start1 = 0, 0
