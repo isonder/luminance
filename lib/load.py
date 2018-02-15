@@ -38,7 +38,7 @@ def _videoname(run, cam):
     return run + "_" + cam + ".mp4"
 
 
-def download_dataset(run=None, cam=None, targetbase='data' + os.sep):
+def download_dataset(run, cam, targetbase='data' + os.sep):
     if not os.path.exists(targetbase):
         os.makedirs(targetbase, exist_ok=True)
     try:
@@ -46,8 +46,9 @@ def download_dataset(run=None, cam=None, targetbase='data' + os.sep):
         if isinstance(urls, str):
             urls = [urls]
         ret = []
+        sk = "-" if len(urls) > 1 else "."
         for rl in urls:
-            trg = targetbase + rl[rl.rfind("/") + 1:]
+            trg = targetbase + "%s_%s" % (run, cam) + rl[rl.rfind(sk):]
             if not os.path.exists(trg):
                 print('Downloading video from %s to %s' % (rl, trg))
                 urlretrieve(rl, trg)
@@ -87,20 +88,34 @@ class ImageFormatError(Exception):
 
 
 def imgseq(run, cam):
-    base = "data%s%s_%s%s" % (os.sep, run, cam, os.sep)
+    dta = vhub_links[run][cam]
+    try:
+        fmt = dta['format']
+    except KeyError:
+        dta = dta['bare']
+        fmt = dta['format']
+    if isinstance(dta['src'], list):
+        camlabel = dta['src'][0]
+        camlabel = camlabel[:camlabel.rfind('-')]
+    else:
+        camlabel = dta['src']
+        camlabel = camlabel[:-14]
+    camlabel = camlabel[camlabel.rfind('_') + 1:]
+    base = "data%s%s_%s%s" % (os.sep, run, camlabel, os.sep)
     if not os.path.exists(base):
-        dta = vhub_links[run][cam]
-        try:
-            fmt = dta['format']
-        except KeyError:
-            dta = dta['bare']
-            fmt = dta['format']
         if fmt == "video_mp4":
             if not os.path.exists(base + ".mp4"):
-                download_dataset(run=run, cam=cam)
+                download_dataset(run=run, cam=camlabel)
             convert_video_to_imgseq(_videoname(run, cam), base)
         elif fmt == "zip-archive":
-            unarchive_imgseq(src=download_dataset(run=run, cam=cam), base=base)
+            if not os.path.exists(base[:-1] + "-0.zip"):
+                src = download_dataset(run=run, cam=cam)
+            else:
+                datadir = os.path.dirname(base[:-1])
+                src = [datadir + os.sep + f
+                       for f in os.listdir(datadir) if f.endswith('.zip')
+                       and os.path.basename(base[:-1]) in f]
+            unarchive_imgseq(src=src, base=base)
         else:
             raise ValueError("Got an unknown format '%s' for run '%s', "
                              "cam '%s'" % (fmt, run, cam))
@@ -171,6 +186,11 @@ vhub_links = {
             'format': 'video_mp4',
             'src': 'https://vhub.org/resources/4238/download/2017-09-13'
                    '_pressure-run05_sony-4k2_injection.mp4'
+        },
+        'rx100v': {
+            'format': 'zip-archive',
+            'src': ['https://vhub.org/resources/4357/download/pr05_cam4-0.zip',
+                    'https://vhub.org/resources/4358/download/pr05_cam4-1.zip']
         }
     },
     'ir16': {
@@ -387,7 +407,7 @@ vhub_links = {
 
 tested_videos = {
     'pr06': {'casio-f1': '', 'rx100v': '', 'pco': ''},
-    'pr05': {'sony-4k2': ''},
+    'pr05': {'sony-4k2': '', 'rx100v': ''},
     'ir16': {'casio-f1': ''},
     'ir15': {'casio-f1': ''},
     'ir14': {'casio-f1': ''},
