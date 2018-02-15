@@ -20,7 +20,7 @@
   - scipy
   - pillow
   - slicerator
-  - PIMS
+  - pims
   
   The `jupyter` and `matplotlib` packages are not mandatory, but recommended. To run the example notebook they are required, though. When using `conda` the last (`pims`) package has to be installed from the conda-forge repository:
   ```bash
