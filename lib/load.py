@@ -38,7 +38,7 @@ def _videoname(run, cam):
     return run + "_" + cam + ".mp4"
 
 
-def download_dataset(run=None, cam=None, targetbase='data' + os.sep):
+def download_dataset(run, cam, targetbase='data' + os.sep):
     if not os.path.exists(targetbase):
         os.makedirs(targetbase, exist_ok=True)
     try:
