@@ -1,3 +1,4 @@
+"""Data loading and download helper for the `luminance` module."""
 import os
 import sys
 from urllib.request import urlretrieve
@@ -11,6 +12,17 @@ show_warnings = True
 
 
 def show(run=True, cam=True, url=False):
+    """Show experiment runs and camera recordings for which material is
+    definitely available on VHub.
+
+    :param run: Show/do not show experiment id.
+    :type run: bool
+    :param cam: Show/do not show camera id.
+    :type cam: bool
+    :param url: Show/do not show the vhub url
+    :type url: bool
+    :return: Returns nothing, but prints to stdout.
+    """
     s, ul = "", ""
     if run:
         s += "run   "
@@ -88,6 +100,18 @@ class ImageFormatError(Exception):
 
 
 def imgseq(run, cam):
+    """Load the image sequence given by `run` and `cam`. If not present in the
+    `data` folder an image sequence is created from the original video. If that
+    video is not present locally, it will be downloaded from the VHub dataset
+    repository.
+
+    :param run: Experiment id.
+    :type run: str
+    :param cam: Camera id, as given by `show()`.
+    :type cam: str
+    :return: The image sequence.
+    :rtype: pims.ImageSequence
+    """
     dta = vhub_links[run][cam]
     try:
         fmt = dta['format']
