@@ -1,0 +1,573 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lib.luminance &mdash; luminance 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="luminance 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> luminance
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">luminance</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>lib.luminance</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for lib.luminance</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;All luminance related functions&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">_np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">ndarray</span> <span class="k">as</span> <span class="n">_nda</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">_mp</span>
+<span class="kn">import</span> <span class="nn">scipy.signal</span> <span class="k">as</span> <span class="nn">_sig</span>
+
+<span class="n">_nprocs</span> <span class="o">=</span> <span class="n">_mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="cumul_bright"><a class="viewcode-back" href="../../index.html#lib.luminance.cumul_bright">[docs]</a><span class="k">def</span> <span class="nf">cumul_bright</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">select</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes the cumulative, relative luminance of an image.</span>
+
+<span class="sd">    :param frame: Image to compute the luminance from.</span>
+<span class="sd">    :type frame: ndarray</span>
+<span class="sd">    :param select: ((start0, end0), (start1, end1)). Optional, to select subset</span>
+<span class="sd">     of `frame`.</span>
+<span class="sd">    :type select: tuple</span>
+<span class="sd">    :return: Brightness of frame.</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">select</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">start0</span><span class="p">,</span> <span class="n">start1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">end0</span><span class="p">,</span> <span class="n">end1</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="p">((</span><span class="n">start0</span><span class="p">,</span> <span class="n">end0</span><span class="p">),</span> <span class="p">(</span><span class="n">start1</span><span class="p">,</span> <span class="n">end1</span><span class="p">))</span> <span class="o">=</span> <span class="n">select</span>
+    <span class="k">return</span> <span class="n">frame</span><span class="p">[</span><span class="n">start0</span><span class="p">:</span><span class="n">end0</span><span class="p">,</span> <span class="n">start1</span><span class="p">:</span><span class="n">end1</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="luminance"><a class="viewcode-back" href="../../index.html#lib.luminance.luminance">[docs]</a><span class="k">def</span> <span class="nf">luminance</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">fov</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">select</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes the luminance from a given video frame.</span>
+
+<span class="sd">    :param frame: Image frame to compute the luminance from.</span>
+<span class="sd">    :type frame: 2D `ndarray`</span>
+<span class="sd">    :param fov: Field of view (square meters).</span>
+<span class="sd">    :type fov: `float`</span>
+<span class="sd">    :param ref: Cumulative reference brightness.</span>
+<span class="sd">    :type ref: `float`</span>
+<span class="sd">    :param noise: Cumulative brightness of background noise.</span>
+<span class="sd">    :type noise: `float`</span>
+<span class="sd">    :param select: Selection marking the subset of `frame` to compute the</span>
+<span class="sd">     luminance from.</span>
+<span class="sd">    :type select: `tuple` or `None`</span>
+<span class="sd">    :return: luminance of `frame`.</span>
+<span class="sd">    :rtype: `float`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">fov</span> <span class="o">*</span> <span class="p">(</span><span class="n">cumul_bright</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">select</span><span class="p">)</span> <span class="o">-</span> <span class="n">noise</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">ref</span> <span class="o">-</span> <span class="n">noise</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_cbright_chunk"><a class="viewcode-back" href="../../index.html#lib.luminance._cbright_chunk">[docs]</a><span class="k">def</span> <span class="nf">_cbright_chunk</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">select</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">que</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;**Do not call this directly.**</span>
+<span class="sd">     Computes the cumulative brightness for a part of an image sequence. This</span>
+<span class="sd">     method should is called multiple times from `cumul_bright_sequence()` in</span>
+<span class="sd">     separate processes.</span>
+
+<span class="sd">    :param chunk: Complete or partial image  sequence.</span>
+<span class="sd">    :type chunk: Slicerator</span>
+<span class="sd">    :param select: Selection marking the subset of `frame` to compute the</span>
+<span class="sd">     luminance from.</span>
+<span class="sd">    :type select: tuple</span>
+<span class="sd">    :param start: Start position in sequence from which `chunk` was selected.</span>
+<span class="sd">    :type start: int</span>
+<span class="sd">    :param end: End position in sequence from which `chunk` was selected.</span>
+<span class="sd">    :type end: int</span>
+<span class="sd">    :param que: The queue object that manages the multiple processes.</span>
+<span class="sd">    :type que: multiprocessing.Queue</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">act</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chunk</span><span class="p">):</span>
+        <span class="n">act</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cumul_bright</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">select</span><span class="p">)</span>
+    <span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">act</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="cumul_bright_sequence"><a class="viewcode-back" href="../../index.html#lib.luminance.cumul_bright_sequence">[docs]</a><span class="k">def</span> <span class="nf">cumul_bright_sequence</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">select</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="n">_nprocs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute the cumulative brightness of each frame in `seq` using the</span>
+<span class="sd">    `luminance()` function. Arguments other than `seq` and `processes are</span>
+<span class="sd">    passed unmodified to `cumul_brightness()`.</span>
+
+<span class="sd">    :param seq: Image sequence to compute the luminance from.</span>
+<span class="sd">    :type seq: Slicerator</span>
+<span class="sd">    :param select: ((start0, end0), (start1, end1)). Optional, to select subset</span>
+<span class="sd">     of a frame in `seq`.</span>
+<span class="sd">    :type select: tuple</span>
+<span class="sd">    :param processes: Number of system processes to use. Default is number of</span>
+<span class="sd">     system CPUs.</span>
+<span class="sd">    :type processes: int</span>
+<span class="sd">    :return: brightness array B(t)</span>
+<span class="sd">    :rtype: ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">itms_per_proc</span><span class="p">,</span> <span class="n">rem</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">//</span> <span class="n">processes</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">%</span> <span class="n">processes</span>
+    <span class="n">que</span> <span class="o">=</span> <span class="n">_mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">procs</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">processes</span><span class="p">):</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">itms_per_proc</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">_mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">_cbright_chunk</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">seq</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">],</span> <span class="n">select</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">que</span><span class="p">))</span>
+        <span class="n">procs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">end</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">_mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span>
+        <span class="n">target</span><span class="o">=</span><span class="n">_cbright_chunk</span><span class="p">,</span>
+        <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">seq</span><span class="p">[</span><span class="n">start</span><span class="p">:],</span> <span class="n">select</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">),</span> <span class="n">que</span><span class="p">))</span>
+    <span class="n">procs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">act</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">_np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">procs</span><span class="p">)):</span>
+        <span class="n">chunk</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">que</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">act</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;chunk:&quot;</span><span class="p">,</span> <span class="n">chunk</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;start:&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="s2">&quot;end:&quot;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+            <span class="k">raise</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">procs</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">act</span></div>
+
+
+<div class="viewcode-block" id="average_cbright"><a class="viewcode-back" href="../../index.html#lib.luminance.average_cbright">[docs]</a><span class="k">def</span> <span class="nf">average_cbright</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">select</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">uncert</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">_nprocs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convenience method to compute the average cumulative brightness of</span>
+<span class="sd">    given image sequence selection. Useful to determine the noise level.</span>
+
+<span class="sd">    :param chunk: Image sequence/chunk.</span>
+<span class="sd">    :type chunk: Slicerator</span>
+<span class="sd">    :param select: Selection of images to work on.</span>
+<span class="sd">    :type select: tuple</span>
+<span class="sd">    :param uncert: Whether to return standard deviation alongside average value.</span>
+<span class="sd">    :type uncert: bool</span>
+<span class="sd">    :param nprocs: Number of processes to use.</span>
+<span class="sd">    :type nprocs: int</span>
+<span class="sd">    :return: Averaged brightness.</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">cumul_bright_sequence</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">select</span><span class="p">,</span> <span class="n">nprocs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">uncert</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">ret</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="luminance_sequence"><a class="viewcode-back" href="../../index.html#lib.luminance.luminance_sequence">[docs]</a><span class="k">def</span> <span class="nf">luminance_sequence</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">fov</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">select</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="n">_nprocs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes the luminance of frame sequence `seq`.</span>
+
+<span class="sd">    :param seq: Image sequence, or part of image sequence.</span>
+<span class="sd">    :type seq: Slicerator</span>
+<span class="sd">    :param fov: Camera&#39;s field of view (typically in square meters).</span>
+<span class="sd">    :type fov: float</span>
+<span class="sd">    :param ref: Reference brightness (melt brightness) to normalize.</span>
+<span class="sd">    :type ref: float</span>
+<span class="sd">    :param noise: Noise (brightness) level. Typically computed by calling</span>
+<span class="sd">     `average_cbright()` with a suitable selection of the main sequence.</span>
+<span class="sd">    :type noise: float</span>
+<span class="sd">    :param select: Optional selection of images.</span>
+<span class="sd">    :type select: tuple</span>
+<span class="sd">    :param processes: Number of processes to use (default is number of host</span>
+<span class="sd">     CPUs).</span>
+<span class="sd">    :type processes: int</span>
+<span class="sd">    :return: Luminance (in square meters) for each frame in given input</span>
+<span class="sd">     sequence.</span>
+<span class="sd">    :rtype: ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">fov</span> <span class="o">*</span> <span class="p">(</span><span class="n">cumul_bright_sequence</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">select</span><span class="p">,</span> <span class="n">processes</span><span class="p">)</span> <span class="o">-</span> <span class="n">noise</span><span class="p">)</span> \
+        <span class="o">/</span> <span class="p">(</span><span class="n">ref</span> <span class="o">-</span> <span class="n">noise</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="sigma_luminance"><a class="viewcode-back" href="../../index.html#lib.luminance.sigma_luminance">[docs]</a><span class="k">def</span> <span class="nf">sigma_luminance</span><span class="p">(</span><span class="n">lum</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">sref</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">snoise</span><span class="p">,</span> <span class="n">fov</span><span class="p">,</span> <span class="n">sfov</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Standard deviation of luminance.</span>
+
+<span class="sd">    :param lum: Luminance</span>
+<span class="sd">    :type lum: float or ndarray.</span>
+<span class="sd">    :param ref: Reference (melt) brightness.</span>
+<span class="sd">    :type ref: float</span>
+<span class="sd">    :param sref: Standard deviation of `ref`.</span>
+<span class="sd">    :type sref: float</span>
+<span class="sd">    :param noise: Background noise brightness (B0).</span>
+<span class="sd">    :type noise: float</span>
+<span class="sd">    :param snoise: Standard deviation of `noise`.</span>
+<span class="sd">    :type snoise: float</span>
+<span class="sd">    :param fov: Camera&#39;s or frame&#39;s field of view.</span>
+<span class="sd">    :type fov: float</span>
+<span class="sd">    :param sfov: Standard deviation of `fov`</span>
+<span class="sd">    :type sfov: float</span>
+<span class="sd">    :rtype: ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">lum</span> <span class="o">/</span> <span class="p">(</span><span class="n">ref</span> <span class="o">-</span> <span class="n">noise</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sref</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="n">fov</span> <span class="o">/</span> <span class="p">(</span><span class="n">ref</span> <span class="o">-</span> <span class="n">noise</span><span class="p">)</span> <span class="o">+</span> <span class="n">lum</span> <span class="o">/</span> <span class="p">(</span><span class="n">ref</span> <span class="o">-</span> <span class="n">noise</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">snoise</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">lum</span> <span class="o">/</span> <span class="n">fov</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sfov</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="sigma_ldot"><a class="viewcode-back" href="../../index.html#lib.luminance.sigma_ldot">[docs]</a><span class="k">def</span> <span class="nf">sigma_ldot</span><span class="p">(</span><span class="n">ldot</span><span class="p">,</span> <span class="n">lum</span><span class="p">,</span> <span class="n">slum</span><span class="p">,</span> <span class="n">srate</span><span class="p">,</span> <span class="n">ssrate</span><span class="p">,</span> <span class="n">lmin</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Standard deviation of Ldot (time derivative of luminance).</span>
+
+<span class="sd">    :param ldot: Luminance time derivative.</span>
+<span class="sd">    :type ldot: ndarray or float</span>
+<span class="sd">    :param lum: Luminance.</span>
+<span class="sd">    :type lum: ndarray or float</span>
+<span class="sd">    :param slum: Standard deviation of luminance.</span>
+<span class="sd">    :type slum: ndarray or float</span>
+<span class="sd">    :param srate: sampling rate.</span>
+<span class="sd">    :type srate: float</span>
+<span class="sd">    :param ssrate: standard devition of sampling rate.</span>
+<span class="sd">    :type ssrate: float</span>
+<span class="sd">    :param lmin: Minimum value of luminance. if `lum` is smaller than this value</span>
+<span class="sd">     the return value will be made invalid (nan).</span>
+<span class="sd">    :type lmin: float</span>
+<span class="sd">    :rtype: ndarray or float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ldot</span><span class="p">,</span> <span class="n">_nda</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">lum</span> <span class="o">&gt;=</span> <span class="n">lmin</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">ldot</span><span class="p">)</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">ldot</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">*</span> <span class="n">slum</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">/</span> <span class="n">lum</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="o">+</span> <span class="p">(</span><span class="n">ssrate</span> <span class="o">/</span> <span class="n">srate</span> <span class="o">*</span> <span class="n">ldot</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">lum</span> <span class="o">&lt;</span> <span class="n">lmin</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">ldot</span> <span class="o">*</span> <span class="n">slum</span> <span class="o">/</span> <span class="n">lum</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+                            <span class="o">+</span> <span class="p">(</span><span class="n">ldot</span> <span class="o">*</span> <span class="n">ssrate</span> <span class="o">/</span> <span class="n">srate</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="dldot"><a class="viewcode-back" href="../../index.html#lib.luminance.dldot">[docs]</a><span class="k">def</span> <span class="nf">dldot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">lum</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="n">_np</span><span class="o">.</span><span class="n">nan</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Speed associated with luminance. Returns v = dot(L) / (2 sqrt(L)).</span>
+
+<span class="sd">    :param t: Time array.</span>
+<span class="sd">    :type t: ndarray</span>
+<span class="sd">    :param lum: Luminance spline. This has to be a spline, since the smoothing</span>
+<span class="sd">     should be done manually.</span>
+<span class="sd">    :type lum: UnivariateSpline</span>
+<span class="sd">    :param threshold: Noise threshold value. At luminosities below this value</span>
+<span class="sd">     `dldot` will return the value passed to `invalid`.</span>
+<span class="sd">    :type threshold: float</span>
+<span class="sd">    :param invalid: Number to use to signify an invalid value (NaN)</span>
+<span class="sd">    :rtype: ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lumn</span> <span class="o">=</span> <span class="n">lum</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">lumn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">lumn</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">invalid</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">lum</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)(</span><span class="n">t</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">_np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lumn</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">lum</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)(</span><span class="n">t</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">_np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lumn</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="sigma_dldot"><a class="viewcode-back" href="../../index.html#lib.luminance.sigma_dldot">[docs]</a><span class="k">def</span> <span class="nf">sigma_dldot</span><span class="p">(</span><span class="n">ldot</span><span class="p">,</span> <span class="n">sldot</span><span class="p">,</span> <span class="n">lum</span><span class="p">,</span> <span class="n">slum</span><span class="p">,</span> <span class="n">lmin</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Standard deviation of dldot.</span>
+<span class="sd">    All parameters except `lmin` should be given either as ndarray, or as</span>
+<span class="sd">    float, mixed parameter sets will return an error.</span>
+
+<span class="sd">    :param ldot: Time derivative of luminance.</span>
+<span class="sd">    :type ldot: float or ndarray.</span>
+<span class="sd">    :param sldot: Standard deviation of `ldot`.</span>
+<span class="sd">    :type sldot: float or ndarray.</span>
+<span class="sd">    :param lum: Luminance.</span>
+<span class="sd">    :type lum: float or ndarray.</span>
+<span class="sd">    :param slum: Uncertainty of `lum`.</span>
+<span class="sd">    :type slum: float or ndarray.</span>
+<span class="sd">    :param lmin: Minimum luminance for which to compute `sigma_dldot`.</span>
+<span class="sd">    :return: 1-sigma uncertainty of dldot.</span>
+<span class="sd">    :rtype: float or ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ldot</span><span class="p">,</span> <span class="n">_nda</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">nan</span> <span class="o">*</span> <span class="n">_np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">ldot</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">lum</span> <span class="o">&gt;</span> <span class="n">lmin</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">sldot</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">lum</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span>
+            <span class="p">(</span><span class="n">ldot</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">*</span> <span class="n">slum</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">lum</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">**</span> <span class="mf">1.5</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lum</span><span class="p">,</span> <span class="n">_nda</span><span class="p">),</span> \
+            <span class="s2">&quot;if ldot is given as float, lum must be, too.&quot;</span>
+        <span class="k">if</span> <span class="n">lum</span> <span class="o">&lt;</span> <span class="n">lmin</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">sldot</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">lum</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span>
+                <span class="p">(</span><span class="n">ldot</span> <span class="o">*</span> <span class="n">slum</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">lum</span> <span class="o">**</span> <span class="mf">1.5</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="FilterProfile"><a class="viewcode-back" href="../../index.html#lib.luminance.FilterProfile">[docs]</a><span class="k">class</span> <span class="nc">FilterProfile</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A little profile object to store camera specific filter profiles.</span>
+
+<span class="sd">    .. attribute:: cname</span>
+
+<span class="sd">        A camera identifier.</span>
+
+<span class="sd">    .. attribute srate</span>
+
+<span class="sd">        Camera&#39;s sampling rate.</span>
+
+<span class="sd">    .. attribute filterfreq</span>
+
+<span class="sd">        Array of frequencies that should be damped from signal.</span>
+
+<span class="sd">    .. attribute filterwidth</span>
+
+<span class="sd">        Frequency width of the sink in the filter response around each value</span>
+<span class="sd">        in `filterfreq`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cname</span><span class="p">,</span> <span class="n">srate</span><span class="p">,</span> <span class="n">filterfreq</span><span class="p">,</span> <span class="n">filterwidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See above.</span>
+
+<span class="sd">        :param cname:</span>
+<span class="sd">        :param srate:</span>
+<span class="sd">        :param filterfreq:</span>
+<span class="sd">        :param filterwidth:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cname</span> <span class="o">=</span> <span class="n">cname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">srate</span> <span class="o">=</span> <span class="n">srate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freqs</span> <span class="o">=</span> <span class="n">filterfreq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filterwidth</span> <span class="o">=</span> <span class="n">filterwidth</span></div>
+
+
+<span class="n">prof_casiof1</span> <span class="o">=</span> <span class="n">FilterProfile</span><span class="p">(</span>
+    <span class="s1">&#39;Casio F1&#39;</span><span class="p">,</span> <span class="n">srate</span><span class="o">=</span><span class="mf">300.</span><span class="p">,</span>
+    <span class="n">filterfreq</span><span class="o">=</span><span class="n">_np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">140</span><span class="p">])</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="filter_lum"><a class="viewcode-back" href="../../index.html#lib.luminance.filter_lum">[docs]</a><span class="k">def</span> <span class="nf">filter_lum</span><span class="p">(</span><span class="n">lum</span><span class="p">,</span> <span class="n">profile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filters a luminance (or any other) signal according to the given filter</span>
+<span class="sd">    profile.</span>
+
+<span class="sd">    :param lum: &#39;raw&#39; signal to be filtered.</span>
+<span class="sd">    :type lum: ndarray</span>
+<span class="sd">    :param profile: Filter profile.</span>
+<span class="sd">    :type profile: FilterProfile</span>
+<span class="sd">    :return: Filtered signal.</span>
+<span class="sd">    :rtype: ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fw</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">filterwidth</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">srate</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">_sig</span><span class="o">.</span><span class="n">bessel</span><span class="p">(</span>
+            <span class="mi">2</span><span class="p">,</span> <span class="n">_np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">fr</span> <span class="o">-</span> <span class="n">fw</span><span class="p">,</span> <span class="n">fr</span> <span class="o">+</span> <span class="n">fw</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">r</span><span class="p">),</span>
+            <span class="n">btype</span><span class="o">=</span><span class="s1">&#39;bandstop&#39;</span><span class="p">,</span> <span class="n">analog</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">fr</span> <span class="ow">in</span> <span class="n">profile</span><span class="o">.</span><span class="n">freqs</span>
+    <span class="p">]</span>
+    <span class="n">filtered</span> <span class="o">=</span> <span class="n">lum</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">bb</span><span class="p">,</span> <span class="n">ab</span> <span class="ow">in</span> <span class="n">pars</span><span class="p">:</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">_sig</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">bb</span><span class="p">,</span> <span class="n">ab</span><span class="p">,</span> <span class="n">filtered</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">filtered</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Ingo Sonder.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

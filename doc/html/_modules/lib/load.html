@@ -1,0 +1,682 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lib.load &mdash; luminance 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="luminance 0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> luminance
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">luminance</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>lib.load</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for lib.load</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Data loading and download helper for the `luminance` module.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="k">import</span> <span class="n">urlretrieve</span>
+<span class="kn">import</span> <span class="nn">pims</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">zipfile</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+
+<span class="n">show_warnings</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="show"><a class="viewcode-back" href="../../index.html#lib.load.show">[docs]</a><span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">run</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cam</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Show experiment runs and camera recordings for which material is</span>
+<span class="sd">    definitely available on VHub.</span>
+
+<span class="sd">    :param run: Show/do not show experiment id.</span>
+<span class="sd">    :type run: bool</span>
+<span class="sd">    :param cam: Show/do not show camera id.</span>
+<span class="sd">    :type cam: bool</span>
+<span class="sd">    :param url: Show/do not show the vhub url</span>
+<span class="sd">    :type url: bool</span>
+<span class="sd">    :return: Returns nothing, but prints to stdout.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">s</span><span class="p">,</span> <span class="n">ul</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">run</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;run   &quot;</span>
+        <span class="n">ul</span> <span class="o">+=</span> <span class="s2">&quot;---   &quot;</span>
+    <span class="k">if</span> <span class="n">cam</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;cam   &quot;</span>
+        <span class="n">ul</span> <span class="o">+=</span> <span class="s2">&quot;---   &quot;</span>
+    <span class="k">if</span> <span class="n">url</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;url   &quot;</span>
+        <span class="n">ul</span> <span class="o">+=</span> <span class="s2">&quot;---   &quot;</span>
+    <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">ul</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">for</span> <span class="n">rrun</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">tested_videos</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">ccam</span><span class="p">,</span> <span class="n">urll</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">run</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="n">rrun</span> <span class="o">+</span> <span class="s2">&quot;  &quot;</span>
+            <span class="k">if</span> <span class="n">cam</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="n">ccam</span> <span class="o">+</span> <span class="s2">&quot;  &quot;</span>
+            <span class="k">if</span> <span class="n">url</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot; , &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">urll</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urll</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">urll</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_videoname</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">cam</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">run</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">cam</span> <span class="o">+</span> <span class="s2">&quot;.mp4&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">download_dataset</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">cam</span><span class="p">,</span> <span class="n">targetbase</span><span class="o">=</span><span class="s1">&#39;data&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">targetbase</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">targetbase</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">urls</span> <span class="o">=</span> <span class="n">tested_videos</span><span class="p">[</span><span class="n">run</span><span class="p">][</span><span class="n">cam</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urls</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">urls</span> <span class="o">=</span> <span class="p">[</span><span class="n">urls</span><span class="p">]</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sk</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;.&quot;</span>
+        <span class="k">for</span> <span class="n">rl</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+            <span class="n">trg</span> <span class="o">=</span> <span class="n">targetbase</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">cam</span><span class="p">)</span> <span class="o">+</span> <span class="n">rl</span><span class="p">[</span><span class="n">rl</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">sk</span><span class="p">):]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">trg</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Downloading video from </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rl</span><span class="p">,</span> <span class="n">trg</span><span class="p">))</span>
+                <span class="n">urlretrieve</span><span class="p">(</span><span class="n">rl</span><span class="p">,</span> <span class="n">trg</span><span class="p">)</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Got wrong identifier: run: </span><span class="si">%s</span><span class="s2">, cam: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">cam</span><span class="p">),</span>
+              <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="k">raise</span>
+
+
+<span class="k">def</span> <span class="nf">convert_video_to_imgseq</span><span class="p">(</span><span class="n">vname</span><span class="p">,</span> <span class="n">base</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converting &#39;</span><span class="si">%s</span><span class="s2">&#39; to image sequence&quot;</span> <span class="o">%</span> <span class="n">vname</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">base</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;ffmpeg -i &quot;</span><span class="si">%s</span><span class="s1">&quot; -q:v 1 </span><span class="si">%s%s</span><span class="s1">frame&#39;</span>
+              <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;data&quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">vname</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">%08d</span><span class="s2">.jpg&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">unarchive_imgseq</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">base</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">src</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">as</span> <span class="n">archive</span><span class="p">:</span>
+            <span class="n">trg</span> <span class="o">=</span> <span class="n">base</span><span class="p">[:</span><span class="n">base</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Extracting </span><span class="si">%d</span><span class="s2"> images from &#39;</span><span class="si">%s</span><span class="s2">&#39; to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span>
+                  <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">archive</span><span class="o">.</span><span class="n">filelist</span><span class="p">),</span> <span class="n">s</span><span class="p">,</span> <span class="n">trg</span><span class="p">))</span>
+            <span class="n">archive</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">trg</span><span class="p">)</span>
+
+
+<span class="n">img_format_labels</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;JPG&#39;</span><span class="p">,</span> <span class="s1">&#39;JPEG&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;tif&#39;</span><span class="p">,</span> <span class="s1">&#39;tiff&#39;</span><span class="p">,</span> <span class="s1">&#39;TIF&#39;</span><span class="p">,</span> <span class="s1">&#39;TIFF&#39;</span>
+<span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">ImageFormatError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="imgseq"><a class="viewcode-back" href="../../index.html#lib.load.imgseq">[docs]</a><span class="k">def</span> <span class="nf">imgseq</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">cam</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load the image sequence given by `run` and `cam`. If not present in the</span>
+<span class="sd">    `data` folder an image sequence is created from the original video. If that</span>
+<span class="sd">    video is not present locally, it will be downloaded from the VHub dataset</span>
+<span class="sd">    repository.</span>
+
+<span class="sd">    :param run: Experiment id.</span>
+<span class="sd">    :type run: str</span>
+<span class="sd">    :param cam: Camera id, as given by `show()`.</span>
+<span class="sd">    :type cam: str</span>
+<span class="sd">    :return: The image sequence.</span>
+<span class="sd">    :rtype: pims.ImageSequence</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dta</span> <span class="o">=</span> <span class="n">vhub_links</span><span class="p">[</span><span class="n">run</span><span class="p">][</span><span class="n">cam</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="n">dta</span><span class="p">[</span><span class="s1">&#39;format&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">dta</span> <span class="o">=</span> <span class="n">dta</span><span class="p">[</span><span class="s1">&#39;bare&#39;</span><span class="p">]</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="n">dta</span><span class="p">[</span><span class="s1">&#39;format&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dta</span><span class="p">[</span><span class="s1">&#39;src&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">camlabel</span> <span class="o">=</span> <span class="n">dta</span><span class="p">[</span><span class="s1">&#39;src&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">camlabel</span> <span class="o">=</span> <span class="n">camlabel</span><span class="p">[:</span><span class="n">camlabel</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">camlabel</span> <span class="o">=</span> <span class="n">dta</span><span class="p">[</span><span class="s1">&#39;src&#39;</span><span class="p">]</span>
+        <span class="n">camlabel</span> <span class="o">=</span> <span class="n">camlabel</span><span class="p">[:</span><span class="o">-</span><span class="mi">14</span><span class="p">]</span>
+    <span class="n">camlabel</span> <span class="o">=</span> <span class="n">camlabel</span><span class="p">[</span><span class="n">camlabel</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;data</span><span class="si">%s%s</span><span class="s2">_</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">camlabel</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">base</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s2">&quot;video_mp4&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;.mp4&quot;</span><span class="p">):</span>
+                <span class="n">download_dataset</span><span class="p">(</span><span class="n">run</span><span class="o">=</span><span class="n">run</span><span class="p">,</span> <span class="n">cam</span><span class="o">=</span><span class="n">camlabel</span><span class="p">)</span>
+            <span class="n">convert_video_to_imgseq</span><span class="p">(</span><span class="n">_videoname</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">cam</span><span class="p">),</span> <span class="n">base</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s2">&quot;zip-archive&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">base</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;-0.zip&quot;</span><span class="p">):</span>
+                <span class="n">src</span> <span class="o">=</span> <span class="n">download_dataset</span><span class="p">(</span><span class="n">run</span><span class="o">=</span><span class="n">run</span><span class="p">,</span> <span class="n">cam</span><span class="o">=</span><span class="n">cam</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">datadir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">base</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">src</span> <span class="o">=</span> <span class="p">[</span><span class="n">datadir</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">f</span>
+                       <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">datadir</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.zip&#39;</span><span class="p">)</span>
+                       <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">base</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+            <span class="n">unarchive_imgseq</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">base</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Got an unknown format &#39;</span><span class="si">%s</span><span class="s2">&#39; for run &#39;</span><span class="si">%s</span><span class="s2">&#39;, &quot;</span>
+                             <span class="s2">&quot;cam &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">cam</span><span class="p">))</span>
+    <span class="n">lbl</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">base</span><span class="p">):</span>
+        <span class="n">lbl</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="n">img_format_labels</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">if</span> <span class="n">lbl</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">img_format_labels</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ImageFormatError</span><span class="p">(</span>
+            <span class="s2">&quot;Did not find any valid image files in </span><span class="si">%s</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;Valid image types are: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">img_format_labels</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">show_warnings</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">pims</span><span class="o">.</span><span class="n">ImageSequence</span><span class="p">(</span><span class="n">base</span> <span class="o">+</span> <span class="s2">&quot;*.&quot;</span> <span class="o">+</span> <span class="n">lbl</span><span class="p">,</span> <span class="n">as_grey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<span class="n">runs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;pr06&#39;</span><span class="p">,</span> <span class="s1">&#39;pr05&#39;</span><span class="p">,</span> <span class="s1">&#39;ir16&#39;</span><span class="p">,</span> <span class="s1">&#39;ir15&#39;</span><span class="p">,</span> <span class="s1">&#39;ir14&#39;</span><span class="p">,</span> <span class="s1">&#39;ir13&#39;</span><span class="p">,</span> <span class="s1">&#39;ir12&#39;</span><span class="p">,</span> <span class="s1">&#39;ir07&#39;</span><span class="p">,</span> <span class="s1">&#39;ir06&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ir05&#39;</span><span class="p">,</span> <span class="s1">&#39;ir04&#39;</span><span class="p">,</span> <span class="s1">&#39;ir03&#39;</span><span class="p">,</span> <span class="s1">&#39;tx02&#39;</span><span class="p">,</span> <span class="s1">&#39;tx08&#39;</span>
+<span class="p">]</span>
+
+
+<span class="n">vhub_links</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;pr06&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4211&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4212/download/2017-09-26&#39;</span>
+                       <span class="s1">&#39;_pressure-run06_casio-f1_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4213/download/2017-09-26&#39;</span>
+                       <span class="s1">&#39;_pressure-run06_casio-f1_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;rx100v&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4222/download/2017-09-26&#39;</span>
+                       <span class="s1">&#39;_pressure-run06_sony-rx100v_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4223/download/2017-09-26&#39;</span>
+                       <span class="s1">&#39;_pressure-run06_sony-rx100v_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;pco&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4216/download/2017-09-26&#39;</span>
+                       <span class="s1">&#39;_pressure-run06_pco_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4217/download/2017-09-26&#39;</span>
+                       <span class="s1">&#39;_pressure-run06_pco_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;pr05&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4237&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;sony-4k2&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4238/download/2017-09-13&#39;</span>
+                   <span class="s1">&#39;_pressure-run05_sony-4k2_injection.mp4&#39;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;rx100v&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;zip-archive&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;https://vhub.org/resources/4357/download/pr05_cam4-0.zip&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;https://vhub.org/resources/4358/download/pr05_cam4-1.zip&#39;</span><span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ir16&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4240&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4241/download/2017-01-21&#39;</span>
+                       <span class="s1">&#39;_injection-run16_casio-f1_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4242/download/2017-01-21&#39;</span>
+                       <span class="s1">&#39;_injection-run16_casio-f1_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;sony-4k1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4243/download/2017-01-21&#39;</span>
+                   <span class="s1">&#39;_injection-run16_sony-4k1_injection.mp4&#39;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;sony-4k2&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4244/download/2017-01-21&#39;</span>
+                   <span class="s1">&#39;_injection-run16_sony-4k2_injection.mp4&#39;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;sony-cx220&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4245/download/2017-01-21&#39;</span>
+                   <span class="s1">&#39;_injection-run16_sony-cx220_injection.mp4&#39;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ir15&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4246&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4252/download/2016-11-27&#39;</span>
+                       <span class="s1">&#39;_injection-run15_casio-f1_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4254/download/2016-11-27&#39;</span>
+                       <span class="s1">&#39;_injection-run15_casio-f1_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;sony-4k1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4253/download/2016-11-27&#39;</span>
+                       <span class="s1">&#39;_injection-run15_sony-4k1_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4255/download/2016-11-27&#39;</span>
+                       <span class="s1">&#39;_injection-run15_sony-4k1_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;sony-4k2&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4256/download/2016-11-27&#39;</span>
+                       <span class="s1">&#39;_injection-run15_sony-4k2_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4257/download/2016-11-27&#39;</span>
+                       <span class="s1">&#39;_injection-run15_sony-4k2_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;sony-cx220&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4258/download/2016-11-27&#39;</span>
+                       <span class="s1">&#39;_injection-run15_sony-cx220_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4259/download/2016-11-27&#39;</span>
+                       <span class="s1">&#39;_injection-run15_sony-cx220_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ir14&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4261&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4262/download/2016-11-09&#39;</span>
+                       <span class="s1">&#39;_injection-run14_casio-f1_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4263/download/2016-11-09&#39;</span>
+                       <span class="s1">&#39;_injection-run14_casio-f1_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;sony-4k1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4264/download/2016-11-09&#39;</span>
+                       <span class="s1">&#39;_injection-run14_sony-4k1_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4265/download/2016-11-09&#39;</span>
+                       <span class="s1">&#39;_injection-run14_sony-4k1_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;sony-4k2&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4266/download/2016-11-09&#39;</span>
+                       <span class="s1">&#39;_injection-run14_sony-4k2_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4267/download/2016-11-09&#39;</span>
+                       <span class="s1">&#39;_injection-run14_sony-4k2_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;sony-cx220&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;bare&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4268/download/2016-11-09&#39;</span>
+                       <span class="s1">&#39;_injection-run14_sony-cx220_injection.mp4&#39;</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;overlay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4269/download/2016-11-09&#39;</span>
+                       <span class="s1">&#39;_injection-run14_sony-cx220_injection_overlay_p30.mp4&#39;</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ir13&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4270&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4271/download/2016-11-02&#39;</span>
+                   <span class="s1">&#39;_injection-run13_casio-f1_injection.mp4&#39;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ir12&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4279&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4281/download/2016-09-21&#39;</span>
+                   <span class="s1">&#39;_injection-run12_casio-f1_injection.mp4&#39;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ir07&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4289&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;sony-4k1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4290/download/2016-08-24&#39;</span>
+                      <span class="s1">&#39;_injection-run07_sony-4k1_injection.mp4&#39;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;sony-4k2&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4292/download/2016-08-24&#39;</span>
+                   <span class="s1">&#39;_injection-run07_sony-4k2_injection.mp4&#39;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ir06&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4293&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4295/download/2016-08-24&#39;</span>
+            <span class="s1">&#39;_injection-run06_casio-f1_injection.mp4&#39;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ir05&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4299&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4300/download/2016-08-12&#39;</span>
+                   <span class="s1">&#39;_injection-run05_casio-f1_injection.mp4&#39;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ir04&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4306&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4308/download/2016-08-12&#39;</span>
+                   <span class="s1">&#39;_injection-run04_casio-f1_injection.mp4&#39;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ir03&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4313&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;video_mp4&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4315/download/2016-08-10&#39;</span>
+                   <span class="s1">&#39;_injection-run03_casio-f1_injection.mp4&#39;</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;tx02&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4340&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;nac&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;zip-archive&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;https://vhub.org/resources/4344/download/tx02_nac-0.zip&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;https://vhub.org/resources/4345/download/tx02_nac-1.zip&#39;</span><span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;tx08&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;dataset&#39;</span><span class="p">:</span> <span class="s1">&#39;https://vhub.org/resources/4347&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;nac&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;zip-archive&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;https://vhub.org/resources/4350/download/tx08_nac-0.zip&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;https://vhub.org/resources/4351/download/tx08_nac-1.zip&#39;</span><span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="n">tested_videos</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;pr06&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;rx100v&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;pco&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;pr05&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;sony-4k2&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;rx100v&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;ir16&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;ir15&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;ir14&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;ir13&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;ir12&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;ir07&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;sony-4k1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;sony-4k2&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;ir06&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;ir05&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;ir04&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;ir03&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;casio-f1&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;tx02&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;nac&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+    <span class="s1">&#39;tx08&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;nac&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+<span class="p">}</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">runs</span><span class="p">:</span>
+    <span class="n">itm</span> <span class="o">=</span> <span class="n">tested_videos</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="n">itm</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sitm</span> <span class="o">=</span> <span class="n">vhub_links</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">kk</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;src&#39;</span> <span class="ow">in</span> <span class="n">sitm</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">tested_videos</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">kk</span><span class="p">]</span> <span class="o">=</span> <span class="n">sitm</span><span class="p">[</span><span class="s1">&#39;src&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s1">&#39;bare&#39;</span> <span class="ow">in</span> <span class="n">sitm</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">tested_videos</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">kk</span><span class="p">]</span> <span class="o">=</span> <span class="n">sitm</span><span class="p">[</span><span class="s1">&#39;bare&#39;</span><span class="p">][</span><span class="s1">&#39;src&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Wrong format in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">sitm</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">kk</span><span class="p">)</span>
+            <span class="k">raise</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Ingo Sonder.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

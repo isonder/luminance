@@ -1,0 +1,613 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>luminance Documentation &mdash; luminance 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="luminance 0.1 documentation" href="#"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> luminance
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#"><cite>luminance</cite> Documentation</a><ul>
+<li><a class="reference internal" href="#module-lib.luminance">luminance</a></li>
+<li><a class="reference internal" href="#module-lib.load">load</a><ul>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">luminance</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li><cite>luminance</cite> Documentation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="luminance-documentation">
+<h1><cite>luminance</cite> Documentation<a class="headerlink" href="#luminance-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="module-lib.luminance">
+<span id="luminance"></span><h2>luminance<a class="headerlink" href="#module-lib.luminance" title="Permalink to this headline">¶</a></h2>
+<p>All luminance related functions</p>
+<dl class="function">
+<dt id="lib.luminance.cumul_bright">
+<code class="descclassname">lib.luminance.</code><code class="descname">cumul_bright</code><span class="sig-paren">(</span><em>frame</em>, <em>select=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#cumul_bright"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.cumul_bright" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the cumulative, relative luminance of an image.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frame</strong> (<em>ndarray</em>) – Image to compute the luminance from.</li>
+<li><strong>select</strong> (<em>tuple</em>) – ((start0, end0), (start1, end1)). Optional, to select subset
+of <cite>frame</cite>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Brightness of frame.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.luminance.luminance">
+<code class="descclassname">lib.luminance.</code><code class="descname">luminance</code><span class="sig-paren">(</span><em>frame</em>, <em>fov</em>, <em>ref</em>, <em>noise</em>, <em>select=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#luminance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.luminance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the luminance from a given video frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frame</strong> (2D <cite>ndarray</cite>) – Image frame to compute the luminance from.</li>
+<li><strong>fov</strong> (<cite>float</cite>) – Field of view (square meters).</li>
+<li><strong>ref</strong> (<cite>float</cite>) – Cumulative reference brightness.</li>
+<li><strong>noise</strong> (<cite>float</cite>) – Cumulative brightness of background noise.</li>
+<li><strong>select</strong> (<cite>tuple</cite> or <cite>None</cite>) – Selection marking the subset of <cite>frame</cite> to compute the
+luminance from.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">luminance of <cite>frame</cite>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><cite>float</cite></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.luminance._cbright_chunk">
+<code class="descclassname">lib.luminance.</code><code class="descname">_cbright_chunk</code><span class="sig-paren">(</span><em>chunk</em>, <em>select</em>, <em>start</em>, <em>end</em>, <em>que</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#_cbright_chunk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance._cbright_chunk" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt><strong>Do not call this directly.</strong></dt>
+<dd>Computes the cumulative brightness for a part of an image sequence. This
+method should is called multiple times from <cite>cumul_bright_sequence()</cite> in
+separate processes.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>chunk</strong> (<em>Slicerator</em>) – Complete or partial image  sequence.</li>
+<li><strong>select</strong> (<em>tuple</em>) – Selection marking the subset of <cite>frame</cite> to compute the
+luminance from.</li>
+<li><strong>start</strong> (<em>int</em>) – Start position in sequence from which <cite>chunk</cite> was selected.</li>
+<li><strong>end</strong> (<em>int</em>) – End position in sequence from which <cite>chunk</cite> was selected.</li>
+<li><strong>que</strong> (<em>multiprocessing.Queue</em>) – The queue object that manages the multiple processes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.luminance.cumul_bright_sequence">
+<code class="descclassname">lib.luminance.</code><code class="descname">cumul_bright_sequence</code><span class="sig-paren">(</span><em>seq</em>, <em>select=None</em>, <em>processes=8</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#cumul_bright_sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.cumul_bright_sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the cumulative brightness of each frame in <cite>seq</cite> using the
+<cite>luminance()</cite> function. Arguments other than <cite>seq</cite> and <cite>processes are
+passed unmodified to `cumul_brightness()</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>seq</strong> (<em>Slicerator</em>) – Image sequence to compute the luminance from.</li>
+<li><strong>select</strong> (<em>tuple</em>) – ((start0, end0), (start1, end1)). Optional, to select subset
+of a frame in <cite>seq</cite>.</li>
+<li><strong>processes</strong> (<em>int</em>) – Number of system processes to use. Default is number of
+system CPUs.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">brightness array B(t)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.luminance.average_cbright">
+<code class="descclassname">lib.luminance.</code><code class="descname">average_cbright</code><span class="sig-paren">(</span><em>chunk</em>, <em>select=None</em>, <em>uncert=False</em>, <em>nprocs=8</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#average_cbright"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.average_cbright" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method to compute the average cumulative brightness of
+given image sequence selection. Useful to determine the noise level.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>chunk</strong> (<em>Slicerator</em>) – Image sequence/chunk.</li>
+<li><strong>select</strong> (<em>tuple</em>) – Selection of images to work on.</li>
+<li><strong>uncert</strong> (<em>bool</em>) – Whether to return standard deviation alongside average value.</li>
+<li><strong>nprocs</strong> (<em>int</em>) – Number of processes to use.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Averaged brightness.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.luminance.luminance_sequence">
+<code class="descclassname">lib.luminance.</code><code class="descname">luminance_sequence</code><span class="sig-paren">(</span><em>seq</em>, <em>fov</em>, <em>ref</em>, <em>noise</em>, <em>select=None</em>, <em>processes=8</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#luminance_sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.luminance_sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the luminance of frame sequence <cite>seq</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>seq</strong> (<em>Slicerator</em>) – Image sequence, or part of image sequence.</li>
+<li><strong>fov</strong> (<em>float</em>) – Camera’s field of view (typically in square meters).</li>
+<li><strong>ref</strong> (<em>float</em>) – Reference brightness (melt brightness) to normalize.</li>
+<li><strong>noise</strong> (<em>float</em>) – Noise (brightness) level. Typically computed by calling
+<cite>average_cbright()</cite> with a suitable selection of the main sequence.</li>
+<li><strong>select</strong> (<em>tuple</em>) – Optional selection of images.</li>
+<li><strong>processes</strong> (<em>int</em>) – Number of processes to use (default is number of host
+CPUs).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Luminance (in square meters) for each frame in given input
+sequence.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.luminance.sigma_luminance">
+<code class="descclassname">lib.luminance.</code><code class="descname">sigma_luminance</code><span class="sig-paren">(</span><em>lum</em>, <em>ref</em>, <em>sref</em>, <em>noise</em>, <em>snoise</em>, <em>fov</em>, <em>sfov</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#sigma_luminance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.sigma_luminance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard deviation of luminance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lum</strong> (<em>float</em><em> or </em><em>ndarray.</em>) – Luminance</li>
+<li><strong>ref</strong> (<em>float</em>) – Reference (melt) brightness.</li>
+<li><strong>sref</strong> (<em>float</em>) – Standard deviation of <cite>ref</cite>.</li>
+<li><strong>noise</strong> (<em>float</em>) – Background noise brightness (B0).</li>
+<li><strong>snoise</strong> (<em>float</em>) – Standard deviation of <cite>noise</cite>.</li>
+<li><strong>fov</strong> (<em>float</em>) – Camera’s or frame’s field of view.</li>
+<li><strong>sfov</strong> (<em>float</em>) – Standard deviation of <cite>fov</cite></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.luminance.sigma_ldot">
+<code class="descclassname">lib.luminance.</code><code class="descname">sigma_ldot</code><span class="sig-paren">(</span><em>ldot</em>, <em>lum</em>, <em>slum</em>, <em>srate</em>, <em>ssrate</em>, <em>lmin=0.0001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#sigma_ldot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.sigma_ldot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard deviation of Ldot (time derivative of luminance).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ldot</strong> (<em>ndarray</em><em> or </em><em>float</em>) – Luminance time derivative.</li>
+<li><strong>lum</strong> (<em>ndarray</em><em> or </em><em>float</em>) – Luminance.</li>
+<li><strong>slum</strong> (<em>ndarray</em><em> or </em><em>float</em>) – Standard deviation of luminance.</li>
+<li><strong>srate</strong> (<em>float</em>) – sampling rate.</li>
+<li><strong>ssrate</strong> (<em>float</em>) – standard devition of sampling rate.</li>
+<li><strong>lmin</strong> (<em>float</em>) – Minimum value of luminance. if <cite>lum</cite> is smaller than this value
+the return value will be made invalid (nan).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray or float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.luminance.dldot">
+<code class="descclassname">lib.luminance.</code><code class="descname">dldot</code><span class="sig-paren">(</span><em>t</em>, <em>lum</em>, <em>threshold=None</em>, <em>invalid=nan</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#dldot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.dldot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Speed associated with luminance. Returns v = dot(L) / (2 sqrt(L)).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>t</strong> (<em>ndarray</em>) – Time array.</li>
+<li><strong>lum</strong> (<em>UnivariateSpline</em>) – Luminance spline. This has to be a spline, since the smoothing
+should be done manually.</li>
+<li><strong>threshold</strong> (<em>float</em>) – Noise threshold value. At luminosities below this value
+<cite>dldot</cite> will return the value passed to <cite>invalid</cite>.</li>
+<li><strong>invalid</strong> – Number to use to signify an invalid value (NaN)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.luminance.sigma_dldot">
+<code class="descclassname">lib.luminance.</code><code class="descname">sigma_dldot</code><span class="sig-paren">(</span><em>ldot</em>, <em>sldot</em>, <em>lum</em>, <em>slum</em>, <em>lmin: float</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#sigma_dldot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.sigma_dldot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard deviation of dldot.
+All parameters except <cite>lmin</cite> should be given either as ndarray, or as
+float, mixed parameter sets will return an error.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ldot</strong> (<em>float</em><em> or </em><em>ndarray.</em>) – Time derivative of luminance.</li>
+<li><strong>sldot</strong> (<em>float</em><em> or </em><em>ndarray.</em>) – Standard deviation of <cite>ldot</cite>.</li>
+<li><strong>lum</strong> (<em>float</em><em> or </em><em>ndarray.</em>) – Luminance.</li>
+<li><strong>slum</strong> (<em>float</em><em> or </em><em>ndarray.</em>) – Uncertainty of <cite>lum</cite>.</li>
+<li><strong>lmin</strong> – Minimum luminance for which to compute <cite>sigma_dldot</cite>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">1-sigma uncertainty of dldot.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float or ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="lib.luminance.FilterProfile">
+<em class="property">class </em><code class="descclassname">lib.luminance.</code><code class="descname">FilterProfile</code><span class="sig-paren">(</span><em>cname</em>, <em>srate</em>, <em>filterfreq</em>, <em>filterwidth=1.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#FilterProfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.FilterProfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A little profile object to store camera specific filter profiles.</p>
+<dl class="attribute">
+<dt id="lib.luminance.FilterProfile.cname">
+<code class="descname">cname</code><a class="headerlink" href="#lib.luminance.FilterProfile.cname" title="Permalink to this definition">¶</a></dt>
+<dd><p>A camera identifier.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.luminance.filter_lum">
+<code class="descclassname">lib.luminance.</code><code class="descname">filter_lum</code><span class="sig-paren">(</span><em>lum</em>, <em>profile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/luminance.html#filter_lum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.luminance.filter_lum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filters a luminance (or any other) signal according to the given filter
+profile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lum</strong> (<em>ndarray</em>) – ‘raw’ signal to be filtered.</li>
+<li><strong>profile</strong> (<a class="reference internal" href="#lib.luminance.FilterProfile" title="lib.luminance.FilterProfile"><em>FilterProfile</em></a>) – Filter profile.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Filtered signal.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-lib.load">
+<span id="load"></span><h2>load<a class="headerlink" href="#module-lib.load" title="Permalink to this headline">¶</a></h2>
+<p>Data loading and download helper for the <cite>luminance</cite> module.</p>
+<dl class="function">
+<dt id="lib.load.show">
+<code class="descclassname">lib.load.</code><code class="descname">show</code><span class="sig-paren">(</span><em>run=True</em>, <em>cam=True</em>, <em>url=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/load.html#show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.load.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show experiment runs and camera recordings for which material is
+definitely available on VHub.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>run</strong> (<em>bool</em>) – Show/do not show experiment id.</li>
+<li><strong>cam</strong> (<em>bool</em>) – Show/do not show camera id.</li>
+<li><strong>url</strong> (<em>bool</em>) – Show/do not show the vhub url</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Returns nothing, but prints to stdout.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="lib.load.imgseq">
+<code class="descclassname">lib.load.</code><code class="descname">imgseq</code><span class="sig-paren">(</span><em>run</em>, <em>cam</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lib/load.html#imgseq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lib.load.imgseq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the image sequence given by <cite>run</cite> and <cite>cam</cite>. If not present in the
+<cite>data</cite> folder an image sequence is created from the original video. If that
+video is not present locally, it will be downloaded from the VHub dataset
+repository.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>run</strong> (<em>str</em>) – Experiment id.</li>
+<li><strong>cam</strong> (<em>str</em>) – Camera id, as given by <cite>show()</cite>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The image sequence.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pims.ImageSequence</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="indices-and-tables">
+<h3>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Ingo Sonder.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
