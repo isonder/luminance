@@ -73,8 +73,8 @@ def _cbright_chunk(chunk, select, start, end, que):
 
 def cumul_bright_sequence(seq, select=None, processes=_nprocs):
     """Compute the cumulative brightness of each frame in `seq` using the
-     `luminance()` function. Arguments other than `seq` and `processes are
-     passed unmodified to `cumul_brightness()`.
+    `luminance()` function. Arguments other than `seq` and `processes are
+    passed unmodified to `cumul_brightness()`.
 
     :param seq: Image sequence to compute the luminance from.
     :type seq: Slicerator
@@ -119,7 +119,7 @@ def cumul_bright_sequence(seq, select=None, processes=_nprocs):
 
 def average_cbright(chunk, select=None, uncert=False, nprocs=_nprocs):
     """Convenience method to compute the average cumulative brightness of
-     given image sequence selection. Useful to determine the noise level.
+    given image sequence selection. Useful to determine the noise level.
 
     :param chunk: Image sequence/chunk.
     :type chunk: Slicerator

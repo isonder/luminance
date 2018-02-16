@@ -43,6 +43,16 @@ luminance
 .. autofunction:: lib.luminance.filter_lum
 
 
+load
+^^^^
+
+.. automodule:: lib.load
+
+.. autofunction:: lib.load.show
+
+.. autofunction:: lib.load.imgseq
+
+
 Indices and tables
 ==================
 
